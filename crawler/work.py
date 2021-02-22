@@ -4,6 +4,7 @@ from .service import Update
 from .service import UnfinishedUrls
 from .parser import ParseForum
 from .parser import ParseTopic
+from .util import getTopicUrl
 from .util import urlRequests
 from .util import timeToYMDHM
 
@@ -202,3 +203,11 @@ def topicHtmlToContent(path_html, path_content, forum, topic):
 				["Content"], ["Time", "UserSignature", "Solved", "Blockquote"])
 
 			if text: f.write("{}\n".format(text))
+
+def topicUpdate(path_url):
+
+	data = getTopicUrl(path_url)
+
+	urls = [url for forum, url in data]
+
+	UnfinishedUrls().addUrls(urls)

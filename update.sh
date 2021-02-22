@@ -7,6 +7,16 @@ fi
 
 cd $(dirname "$0")
 
+## Update database
+
+# for dataset in ${database[*]}; do
+
+# 	printf "\n${dataset}\n"
+
+# 	python3 main.py ${dataset} --update
+
+# done
+
 for dataset in ${database[*]}; do
 
 	printf "\n${dataset}\n"
