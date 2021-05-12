@@ -10,21 +10,21 @@ HP support community discussions on https://h30434.www3.hp.com .
 
 - Download Database
 
-    ***run*** `sh download.sh`
+    ***run*** `./download.sh`
 
 ## Update
 
 - Update
 
-    ***run*** `sh update.sh`
+    ***run*** `./update.sh`
     
 - Update **Notebooks**
 
-    ***run*** `sh update.sh Notebooks`
+    ***run*** `./update.sh Notebooks`
     
 - Current status
 
-    ***run*** `sh status.sh`
+    ***run*** `./status.sh`
 
 ## Directory Layout
 
@@ -61,5 +61,7 @@ HP/
 │
 ├── status.sh
 │
-└── README.md
+├── README.md
+│
+└── chromedriver
 ```
