@@ -20,203 +20,203 @@ from selenium.webdriver.support import expected_conditions as ec
 
 def topicUrlCrawler(path_url, item, length, id_ = 0):
 
-	forum, url = item
+    forum, url = item
 
-	def stopCrawler(first_url):
-	
-		try:
+    def stopCrawler(first_url):
 
-			parser = ParseTopic(urlRequests(first_url))
+        try:
 
-			pages = parser.getPages()
+            parser = ParseTopic(urlRequests(first_url))
 
-			if pages > 1:
+            pages = parser.getPages()
 
-				parser = ParseTopic(urlRequests("{}/page/{}".format(first_url, pages)))
+            if pages > 1:
 
-			time = parser.getContent(["Time"], ["Content"]).split("\n")[-1]
+                parser = ParseTopic(urlRequests("{}/page/{}".format(first_url, pages)))
 
-			return Update().isUpdated(timeToYMDHM(time))
-		
-		except Exception as e:
+            time = parser.getContent(["Time"], ["Content"]).split("\n")[-1]
 
-			# print(e)
+            return Update().isUpdated(timeToYMDHM(time))
 
-			return False
+        except Exception as e:
 
-	def work():
+            # print(e)
 
-		Status().write("{:<{}s} | ".format(forum, length), id_)
+            return False
 
-		try:
+    def work():
 
-			makedirs(path_url, exist_ok = True)
+        Status().write("{:<{}s} | ".format(forum, length), id_)
 
-			file_url = "{}/{}".format(path_url, forum)
+        try:
 
-			chrome_options = Options()
-			chrome_options.add_argument("--headless")
-			chrome_options.add_argument("--disable-gpu")
-			chrome_options.add_argument("blink-settings=imagesEnabled=false")
-			chrome_options.add_argument("--window-size=4000,1600")
-			
-			chromedriver = "./chromedriver"
+            makedirs(path_url, exist_ok = True)
 
-			browser = webdriver.Chrome(chromedriver, chrome_options = chrome_options)
+            file_url = "{}/{}".format(path_url, forum)
 
-			browser.get(url)
+            chrome_options = Options()
+            chrome_options.add_argument("--headless")
+            chrome_options.add_argument("--disable-gpu")
+            chrome_options.add_argument("blink-settings=imagesEnabled=false")
+            chrome_options.add_argument("--window-size=4000,1600")
 
-			for num in range(1, 100000):
+            chromedriver = "./chromedriver"
 
-				# Wait
+            browser = webdriver.Chrome(chromedriver, chrome_options = chrome_options)
 
-				WebDriverWait(browser, 60).until(
-					ec.presence_of_element_located((By.XPATH, 
-					"//a[@id='jp-next'][@data='{}']".format(num + 1)))
-				)
+            browser.get(url)
 
-				parser = ParseForum(browser.page_source)
+            for num in range(1, 100000):
 
-				if stopCrawler(parser.getFirstUrl()): break
+                # Wait
 
-				# Save Url
+                WebDriverWait(browser, 60).until(
+                    ec.presence_of_element_located((By.XPATH, 
+                    "//a[@id='jp-next'][@data='{}']".format(num + 1)))
+                )
 
-				urls = parser.getUrls()
+                parser = ParseForum(browser.page_source)
 
-				with open(file_url, "a") as f: f.write("\n".join(urls) + "\n")
+                if stopCrawler(parser.getFirstUrl()): break
 
-				UnfinishedUrls().addUrls(urls)
+                # Save Url
 
-				Status().write("{:<{}s} | Page: {}".format(forum, length, num), id_)
+                urls = parser.getUrls()
 
-				# Next Page
+                with open(file_url, "a") as f: f.write("\n".join(urls) + "\n")
 
-				next_page = browser.find_elements_by_xpath(
-					"//a[@class='jp-next pagination-recent-post_page']")
+                UnfinishedUrls().addUrls(urls)
 
-				if len(next_page) == 0: break
+                Status().write("{:<{}s} | Page: {}".format(forum, length, num), id_)
 
-				next_page = next_page[0]
+                # Next Page
 
-				browser.execute_script("arguments[0].scrollIntoView(false);", next_page)
-				browser.execute_script("window.scrollBy(0, 200)")
+                next_page = browser.find_elements_by_xpath(
+                    "//a[@class='jp-next pagination-recent-post_page']")
 
-				sleep(1)
+                if len(next_page) == 0: break
 
-				next_page.click()
+                next_page = next_page[0]
 
-			with open(file_url, "r") as f: urls = set(f.read().split())
-			with open(file_url, "w") as f: f.write("\n".join(sorted(urls)) + "\n")
+                browser.execute_script("arguments[0].scrollIntoView(false);", next_page)
+                browser.execute_script("window.scrollBy(0, 200)")
 
-		except Exception as e:
+                sleep(1)
 
-			# print(e)
-			
-			return False
+                next_page.click()
 
-		finally: browser.close()
+            with open(file_url, "r") as f: urls = set(f.read().split())
+            with open(file_url, "w") as f: f.write("\n".join(sorted(urls)) + "\n")
 
-		return True
+        except Exception as e:
 
-	while not work(): 
-		
-		print("{:<{}s} Restart!!".format(forum, length))
+            # print(e)
 
-	print("{:<{}s} Finished.".format(forum, length))
+            return False
+
+        finally: browser.close()
+
+        return True
+
+    while not work(): 
+
+        print("{:<{}s} Restart!!".format(forum, length))
+
+    print("{:<{}s} Finished.".format(forum, length))
 
 def topicHtmlCrawler(path_html, path_content, items, id_ = 0):
 
-	for i, item in enumerate(items, 1):
+    for i, item in enumerate(items, 1):
 
-		topic = ""
+        topic = ""
 
-		try:
+        try:
 
-			forum, url = item
+            forum, url = item
 
-			parser = ParseTopic(urlRequests(url))
+            parser = ParseTopic(urlRequests(url))
 
-			time = parser.getContent(["Time"], ["Content"]).split("\n")[0]
-			code = url.split("/")[-1]
-			topic = "{}_{}.txt".format(timeToYMDHM(time).split()[0], code)
+            time = parser.getContent(["Time"], ["Content"]).split("\n")[0]
+            code = url.split("/")[-1]
+            topic = "{}_{}.txt".format(timeToYMDHM(time).split()[0], code)
 
-			makedirs("{}/{}".format(path_html, forum), exist_ok = True)
+            makedirs("{}/{}".format(path_html, forum), exist_ok = True)
 
-			file = "{}/{}/{}".format(path_html, forum, topic)
+            file = "{}/{}/{}".format(path_html, forum, topic)
 
-			with open(file, "w") as f:
+            with open(file, "w") as f:
 
-				f.write(str(parser))
-		
-				for page in range(2, parser.getPages() + 1):
-					parser = ParseTopic(urlRequests("{}/page/{}".format(url, page)))
-					f.write("\n{}".format(str(parser)))
+                f.write(str(parser))
 
-			topicHtmlToContent(path_html, path_content, forum, topic)
+                for page in range(2, parser.getPages() + 1):
+                    parser = ParseTopic(urlRequests("{}/page/{}".format(url, page)))
+                    f.write("\n{}".format(str(parser)))
 
-			UnfinishedUrls().delUrls([url])
-		
-		except Exception as e:
+            topicHtmlToContent(path_html, path_content, forum, topic)
 
-			# print(e)
+            UnfinishedUrls().delUrls([url])
 
-			print(url)
+        except Exception as e:
 
-		Status().write("[{:>{}d} / {}] {}".format(i, len(str(len(items))), len(items), topic), id_)
+            # print(e)
+
+            print(url)
+
+        Status().write("[{:>{}d} / {}] {}".format(i, len(str(len(items))), len(items), topic), id_)
 
 def topicHtmlToContent(path_html, path_content, forum, topic):
 
-	makedirs("{}/{}".format(path_content, forum), exist_ok = True)
+    makedirs("{}/{}".format(path_content, forum), exist_ok = True)
 
-	file_html    = "{}/{}/{}".format(path_html,    forum, topic)
-	file_content = "{}/{}/{}".format(path_content, forum, topic)
+    file_html    = "{}/{}/{}".format(path_html,    forum, topic)
+    file_content = "{}/{}/{}".format(path_content, forum, topic)
 
-	with open(file_html, "r") as f:
+    with open(file_html, "r") as f:
 
-		parser = [ParseTopic(html) for html in filter(None, f.read().split("<!DOCTYPE html>"))]
+        parser = [ParseTopic(html) for html in filter(None, f.read().split("<!DOCTYPE html>"))]
 
-	topic_url     = parser[0].getUrl()
-	topic_title   = parser[0].getContent(["Title"]).split("\n")[0]
-	topic_product = parser[0].getContent(["Product"]).split("\n")[0]
-	topic_os      = parser[0].getContent(["Os"]).split("\n")[0]
-	topic_solved  = parser[0].getContent(["Solved"])[:7]
+    topic_url     = parser[0].getUrl()
+    topic_title   = parser[0].getContent(["Title"]).split("\n")[0]
+    topic_product = parser[0].getContent(["Product"]).split("\n")[0]
+    topic_os      = parser[0].getContent(["Os"]).split("\n")[0]
+    topic_solved  = parser[0].getContent(["Solved"])[:7]
 
-	topic_time_first = timeToYMDHM(parser[ 0].getContent(["Time"], ["Content"]).split("\n")[ 0])
-	topic_time_last  = timeToYMDHM(parser[-1].getContent(["Time"], ["Content"]).split("\n")[-1])
+    topic_time_first = timeToYMDHM(parser[ 0].getContent(["Time"], ["Content"]).split("\n")[ 0])
+    topic_time_last  = timeToYMDHM(parser[-1].getContent(["Time"], ["Content"]).split("\n")[-1])
 
-	topic_product = "`No Product`" if topic_product == "" else topic_product[len("Product: "):]
+    topic_product = "`No Product`" if topic_product == "" else topic_product[len("Product: "):]
 
-	topic_os = "`No Operating System`" if topic_os == "" else topic_os[len("Operating System: "):]
+    topic_os = "`No Operating System`" if topic_os == "" else topic_os[len("Operating System: "):]
 
-	with open(file_content, "w") as f:
+    with open(file_content, "w") as f:
 
-		f.write("{}\n{}\n".format(topic_url, topic_title))
-		f.write("{}\n{}\n".format(topic_product, topic_os))
-		f.write("{}\n{}\n".format(topic_time_first, topic_time_last))
+        f.write("{}\n{}\n".format(topic_url, topic_title))
+        f.write("{}\n{}\n".format(topic_product, topic_os))
+        f.write("{}\n{}\n".format(topic_time_first, topic_time_last))
 
-		if topic_solved: f.write("{}\n".format(topic_solved))
+        if topic_solved: f.write("{}\n".format(topic_solved))
 
-		f.write("\n")
+        f.write("\n")
 
-		for i, _ in enumerate(parser):
+        for i, _ in enumerate(parser):
 
-			text = parser[i].getContent(
-				["Content"], ["Time", "UserSignature", "Solved", "Blockquote"])
+            text = parser[i].getContent(
+                ["Content"], ["Time", "UserSignature", "Solved", "Blockquote"])
 
-			if text: f.write("{}\n".format(text))
+            if text: f.write("{}\n".format(text))
 
 def topicUpdate(path_url):
 
-	data = getTopicUrl(path_url)
+    data = getTopicUrl(path_url)
 
-	urls = [url for forum, url in data]
+    urls = [url for forum, url in data]
 
-	UnfinishedUrls().addUrls(urls)
+    UnfinishedUrls().addUrls(urls)
 
 def topicClean():
 
-	urls = UnfinishedUrls().getUrls()
+    urls = UnfinishedUrls().getUrls()
 
-	print("\n".join(urls))
+    print("\n".join(urls))
 
-	UnfinishedUrls().delUrls(urls)
+    UnfinishedUrls().delUrls(urls)

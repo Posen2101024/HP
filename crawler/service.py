@@ -5,129 +5,129 @@ import threading
 
 def serviceInit(dataset):
 
-	Status().init()
-	Update().init(dataset)
-	UnfinishedUrls().init(dataset)
+    Status().init()
+    Update().init(dataset)
+    UnfinishedUrls().init(dataset)
 
 class _Singleton():
 
-	_instance = None
+    _instance = None
 
-	def __new__(self, *args, **kwargs):
+    def __new__(self, *args, **kwargs):
 
-		if not self._instance:
+        if not self._instance:
 
-			self._instance = super().__new__(self)
+            self._instance = super().__new__(self)
 
-		return self._instance
+        return self._instance
 
 class Status(_Singleton):
 
-	def init(self, name = ".status"):
+    def init(self, name = ".status"):
 
-		self.lock = threading.Lock()
+        self.lock = threading.Lock()
 
-		self.name = name
+        self.name = name
 
-		self.status = []
+        self.status = []
 
-	def write(self, text, id_):
+    def write(self, text, id_):
 
-		with self.lock:
+        with self.lock:
 
-			while len(self.status) <= id_:
-				self.status.append("")
+            while len(self.status) <= id_:
+                self.status.append("")
 
-			self.status[id_] = text
+            self.status[id_] = text
 
-		with open(self.name, "w") as f:
+        with open(self.name, "w") as f:
 
-			f.write("\n".join(self.status))
+            f.write("\n".join(self.status))
 
-	def clear(self):
+    def clear(self):
 
-		with self.lock: self.status = []
+        with self.lock: self.status = []
 
 class Update(_Singleton):
 
-	def init(self, dataset, dir_ = ".service", name = "update"):
+    def init(self, dataset, dir_ = ".service", name = "update"):
 
-		path = "{}/{}".format(dataset, dir_)
+        path = "{}/{}".format(dataset, dir_)
 
-		makedirs(path, exist_ok = True)
+        makedirs(path, exist_ok = True)
 
-		self.lock = threading.Lock()
+        self.lock = threading.Lock()
 
-		self.name = "{}/{}".format(path, name)
+        self.name = "{}/{}".format(path, name)
 
-		with open(self.name, "a+") as f:
-			f.seek(0); date = f.read()
+        with open(self.name, "a+") as f:
+            f.seek(0); date = f.read()
 
-		self.date = self.latest = date if date else "0000-00-00"
+        self.date = self.latest = date if date else "0000-00-00"
 
-	def isUpdated(self, date):
+    def isUpdated(self, date):
 
-		with self.lock:
+        with self.lock:
 
-			if self.latest < date:
+            if self.latest < date:
 
-				self.latest = date
+                self.latest = date
 
-		return self.date > date
+        return self.date > date
 
-	def latestUpdate(self):
+    def latestUpdate(self):
 
-		with open(self.name, "w") as f:
+        with open(self.name, "w") as f:
 
-			f.write(self.latest)
+            f.write(self.latest)
 
 class UnfinishedUrls(_Singleton):
 
-	def init(self, dataset, dir_ = ".service", name = "unfinished_urls", 
-		add_urls = "add_urls", del_urls = "del_urls"):
+    def init(self, dataset, dir_ = ".service", name = "unfinished_urls", 
+        add_urls = "add_urls", del_urls = "del_urls"):
 
-		path = "{}/{}".format(dataset, dir_)
+        path = "{}/{}".format(dataset, dir_)
 
-		makedirs(path, exist_ok = True)
+        makedirs(path, exist_ok = True)
 
-		self.lock = threading.Lock()
+        self.lock = threading.Lock()
 
-		self.name = "{}/{}".format(path, name)
-		self.add_urls = "{}/{}".format(path, add_urls)
-		self.del_urls = "{}/{}".format(path, del_urls)
+        self.name = "{}/{}".format(path, name)
+        self.add_urls = "{}/{}".format(path, add_urls)
+        self.del_urls = "{}/{}".format(path, del_urls)
 
-		with open(self.name, "a+") as f:
-			f.seek(0); self.urls = set(f.read().split())
-		with open(self.add_urls, "a+") as f:
-			f.seek(0); self.urls = self.urls | set(f.read().split())
-		with open(self.del_urls, "a+") as f:
-			f.seek(0); self.urls = self.urls - set(f.read().split())
+        with open(self.name, "a+") as f:
+            f.seek(0); self.urls = set(f.read().split())
+        with open(self.add_urls, "a+") as f:
+            f.seek(0); self.urls = self.urls | set(f.read().split())
+        with open(self.del_urls, "a+") as f:
+            f.seek(0); self.urls = self.urls - set(f.read().split())
 
-		with open(self.name, "w") as f: 
-			f.write("\n".join(self.urls))
-		with open(self.add_urls, "w") as f: pass
-		with open(self.del_urls, "w") as f: pass
+        with open(self.name, "w") as f: 
+            f.write("\n".join(self.urls))
+        with open(self.add_urls, "w") as f: pass
+        with open(self.del_urls, "w") as f: pass
 
-	def getUrls(self): return self.urls
+    def getUrls(self): return self.urls
 
-	def addUrls(self, urls):
+    def addUrls(self, urls):
 
-		with self.lock:
+        with self.lock:
 
-			urls = set(urls)
+            urls = set(urls)
 
-			self.urls = self.urls | urls
+            self.urls = self.urls | urls
 
-			with open(self.add_urls, "a") as f:
-				f.write("\n".join(urls) + "\n")
+            with open(self.add_urls, "a") as f:
+                f.write("\n".join(urls) + "\n")
 
-	def delUrls(self, urls):
+    def delUrls(self, urls):
 
-		with self.lock:
+        with self.lock:
 
-			urls = set(urls)
+            urls = set(urls)
 
-			self.urls = self.urls - urls
+            self.urls = self.urls - urls
 
-			with open(self.del_urls, "a") as f:
-				f.write("\n".join(urls) + "\n")
+            with open(self.del_urls, "a") as f:
+                f.write("\n".join(urls) + "\n")

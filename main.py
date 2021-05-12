@@ -12,50 +12,50 @@ import argparse
 
 def main(args):
 
-	path_forum   = "database/{}/forum.csv".format(args.dataset)
-	path_url     = "database/{}/url".format(args.dataset)
-	path_html    = "database/{}/html".format(args.dataset)
-	path_content = "database/{}/content".format(args.dataset)
+    path_forum   = "database/{}/forum.csv".format(args.dataset)
+    path_url     = "database/{}/url".format(args.dataset)
+    path_html    = "database/{}/html".format(args.dataset)
+    path_content = "database/{}/content".format(args.dataset)
 
-	serviceInit("database/{}".format(args.dataset))
+    serviceInit("database/{}".format(args.dataset))
 
-	if args.url:
+    if args.url:
 
-		topicUrlCrawlerThread(path_forum, path_url)
+        topicUrlCrawlerThread(path_forum, path_url)
 
-	if args.html:
+    if args.html:
 
-		topicHtmlCrawlerThread(path_url, path_html, path_content, num_workers = 8)
+        topicHtmlCrawlerThread(path_url, path_html, path_content, num_workers = 8)
 
-	if args.content:
+    if args.content:
 
-		topicHtmlToContentProcess(path_html, path_content, num_workers = 4)
+        topicHtmlToContentProcess(path_html, path_content, num_workers = 4)
 
-	if args.update:
+    if args.update:
 
-		topicUpdate(path_url)
+        topicUpdate(path_url)
 
-	if args.clean:
+    if args.clean:
 
-		topicClean()
+        topicClean()
 
 if __name__ == "__main__":
 
-	parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()
 
-	parser.add_argument("dataset", type = str)
+    parser.add_argument("dataset", type = str)
 
-	parser.add_argument("--url", 
-		default = False, action = "store_true")
-	parser.add_argument("--html", 
-		default = False, action = "store_true")
-	parser.add_argument("--content", 
-		default = False, action = "store_true")
-	parser.add_argument("--update", 
-		default = False, action = "store_true")
-	parser.add_argument("--clean", 
-		default = False, action = "store_true")
+    parser.add_argument("--url", 
+        default = False, action = "store_true")
+    parser.add_argument("--html", 
+        default = False, action = "store_true")
+    parser.add_argument("--content", 
+        default = False, action = "store_true")
+    parser.add_argument("--update", 
+        default = False, action = "store_true")
+    parser.add_argument("--clean", 
+        default = False, action = "store_true")
 
-	args = parser.parse_args()
+    args = parser.parse_args()
 
-	main(args)
+    main(args)
